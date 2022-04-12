@@ -17,7 +17,7 @@ class Auth extends ApiController
 
     $errors = [
       'password' => [
-        'validateInfo' => '驗證失敗。'
+        'validateInfo' => 'email or password wrong'
       ]
     ];
 
@@ -36,19 +36,9 @@ class Auth extends ApiController
     return $this->getAccessTokenForUser($input['email']);
   }
 
-  public function testApi()
+  public function testApi(): object
   {
-    list($data, $result) = getEncryptJWTForUser('client-1', ['data' => '123']); // TODO: param1 get from database
-
-    return $this->getResponse(
-      [
-        'status' => 'success',
-        'message' => 'this is testApi func',
-        'data' => $data,
-        'decode' => $result
-      ],
-      ResponseInterface::HTTP_BAD_REQUEST
-    );
+    return $this->getEncryptDataForUser('client-1', ['data' => '123']); // TODO: param1 get from database
   }
 
   /**
@@ -61,13 +51,9 @@ class Auth extends ApiController
 
       list($JWT) = getSignedJWTForUser($emailAddress);
 
-      // TODO: record token request to DB
-      // ...
-
       return $this->getResponse(
         [
           'status' => 'success',
-          'message' => '帳密驗證成功。',
           'result' => [
             'user' => [
               'email' => $emailAddress
@@ -76,7 +62,31 @@ class Auth extends ApiController
           ]
         ]
       );
-    } catch (Exception $exception) { // JWT exception (include check fail) will be cached here
+    }
+    // JWT exception (include check fail) will be cached here
+    catch (Exception $exception) {
+      return $this->getResponse(
+        [
+          'status' => 'fail',
+          'message' => $exception->getMessage()
+        ],
+        ResponseInterface::HTTP_BAD_REQUEST
+      );
+    }
+  }
+
+  private function getEncryptDataForUser(string $clientName, array $data): object
+  {
+    try {
+      list($data, $result) = getEncryptJWTForUser($clientName, $data); // TODO: param1 get from database
+      return $this->getResponse(
+        [
+          'status' => 'success',
+          'result' => $data,
+          'decode' => $result
+        ]
+      );
+    } catch (Exception $exception) {
       return $this->getResponse(
         [
           'status' => 'fail',

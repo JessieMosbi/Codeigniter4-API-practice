@@ -78,7 +78,7 @@ function getSignedJWTForUser(): array
 }
 
 // Get JWS (signed JWT) from Authentication header (format: Bearer XXXXXXXXX)
-function getJWTFromRequest($authenticationHeader): string
+function getSignedJWTFromRequest($authenticationHeader): string
 {
   if (is_null($authenticationHeader)) {
     throw new Exception('Missing or invalid JWT in request');
@@ -87,7 +87,7 @@ function getJWTFromRequest($authenticationHeader): string
 }
 
 // Decodes JWS (signed JWT) and validate it
-function validateJWTFromRequest(string $encodedToken): bool
+function validateSignedJWT(string $encodedToken): bool
 {
   $jwtSetting = getJWTSetting();
   $jwk = JWKFactory::createFromKeyFile($jwtSetting['PK'], $jwtSetting['KP']);
@@ -218,7 +218,7 @@ function getEncryptJWTForUser(string $userName, array $data): array
 }
 
 // Test: simulate client to decode Nested JWT
-function decodePayloadFromNestedJWT(string $encodedToken)
+function decodePayloadFromNestedJWT(string $encodedToken): array
 {
   $jwtSetting = getJWTSetting();
 
