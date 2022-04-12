@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use CodeIgniter\HTTP\ResponseInterface;
+use Exception;
 
 class Auth extends ApiController
 {
@@ -32,12 +33,42 @@ class Auth extends ApiController
       );
     }
 
-    // TODO: Replaced by sending JWT token to Client
-    return $this->getResponse(
-      [
-        'status' => 'success',
-      ],
-      ResponseInterface::HTTP_BAD_REQUEST
-    );
+    return $this->getAccessTokenForUser($input['email']);
+  }
+
+  /**
+   * Create access_token for existing user
+   */
+  private function getAccessTokenForUser(string $emailAddress, int $responseCode = ResponseInterface::HTTP_OK): object
+  {
+    try {
+      helper('JWT');
+
+      list($JWT) = getSignedJWTForUser($emailAddress);
+
+      // TODO: record token request to DB
+      // ...
+
+      return $this->getResponse(
+        [
+          'status' => 'success',
+          'message' => '帳密驗證成功。',
+          'result' => [
+            'user' => [
+              'email' => $emailAddress
+            ],
+            'access_token' => $JWT
+          ]
+        ]
+      );
+    } catch (Exception $exception) { // JWT exception (include check fail) will be cached here
+      return $this->getResponse(
+        [
+          'status' => 'fail',
+          'message' => $exception->getMessage()
+        ],
+        ResponseInterface::HTTP_BAD_REQUEST
+      );
+    }
   }
 }
