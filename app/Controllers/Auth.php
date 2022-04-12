@@ -36,6 +36,13 @@ class Auth extends ApiController
     return $this->getAccessTokenForUser($input['email']);
   }
 
+  public function testApi()
+  {
+    helper('JWT');
+    $authenticationHeader = $this->request->getServer('HTTP_AUTHORIZATION');
+    echo getJWTFromRequest($authenticationHeader);
+  }
+
   /**
    * Create access_token for existing user
    */

@@ -74,10 +74,16 @@ function getSignedJWTForUser(): array
     ->build();
   $token = $serializer->serialize($jws, 0);
 
-  // test validate JWS
-  // validateJWTFromRequest($token);
-
   return [$token];
+}
+
+// Get JWS (signed JWT) from Authentication header (format: Bearer XXXXXXXXX)
+function getJWTFromRequest($authenticationHeader): string
+{
+  if (is_null($authenticationHeader)) {
+    throw new Exception('Missing or invalid JWT in request');
+  }
+  return explode(' ', $authenticationHeader)[1];
 }
 
 // Decodes JWS (signed JWT) and validate it
