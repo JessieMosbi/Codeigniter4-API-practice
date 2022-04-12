@@ -38,9 +38,13 @@ class Auth extends ApiController
 
   public function testApi()
   {
-    helper('JWT');
-    $authenticationHeader = $this->request->getServer('HTTP_AUTHORIZATION');
-    echo getJWTFromRequest($authenticationHeader);
+    return $this->getResponse(
+      [
+        'status' => 'success',
+        'message' => 'this is testApi func',
+      ],
+      ResponseInterface::HTTP_BAD_REQUEST
+    );
   }
 
   /**
