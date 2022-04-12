@@ -38,10 +38,14 @@ class Auth extends ApiController
 
   public function testApi()
   {
+    list($data, $result) = getEncryptJWTForUser('client-1', ['data' => '123']); // TODO: param1 get from database
+
     return $this->getResponse(
       [
         'status' => 'success',
         'message' => 'this is testApi func',
+        'data' => $data,
+        'decode' => $result
       ],
       ResponseInterface::HTTP_BAD_REQUEST
     );

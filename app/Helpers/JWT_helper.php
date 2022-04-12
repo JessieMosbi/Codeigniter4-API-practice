@@ -129,10 +129,154 @@ function validateJWTFromRequest(string $encodedToken): bool
 function getJWTSetting(): array
 {
   return [
-    "KP" => getenv('KEY_FILE_PASSWORD'),
-    "PK" => getenv('PUBLIC_KEY_FILE'),
-    "SK" => getenv('PRIVATE_KEY_FILE'),
-    "ISSUER" => getenv('JWT_ISSUER'),
-    "TTL" => getenv('JWT_TIME_TO_LIVE')
+    'KP' => getenv('KEY_FILE_PASSWORD'),
+    'PK' => getenv('PUBLIC_KEY_FILE'),
+    'SK' => getenv('PRIVATE_KEY_FILE'),
+    'ISSUER' => getenv('JWT_ISSUER'),
+    'TTL' => getenv('JWT_TIME_TO_LIVE'),
+    'CLIENT-1' => [
+      'KP' => getenv('KEY_FILE_PASSWORD_CLIENT1'),
+      'PK' => getenv('PUBLIC_KEY_FILE_CLIENT1'),
+      'SK' => getenv('PRIVATE_KEY_FILE_CLIENT1'),
+    ]
   ];
+}
+
+// Generate a Nested JWT (JWE with JWT as payload) for passing data
+function getEncryptJWTForUser(string $userName, array $data): array
+{
+  $jwtSetting = getJWTSetting();
+  $iat = time();
+
+  $payload = json_encode([
+    'iat'  => $iat,
+    'iss'  => $jwtSetting['ISSUER'],
+    'exp'  => $iat + $jwtSetting['TTL'],
+    'aud'  => $userName,
+    'data' => $data
+  ]);
+
+  $signatureKey = JWKFactory::createFromKeyFile($jwtSetting['SK'], $jwtSetting['KP']);
+  $encryptionKey = JWKFactory::createFromKeyFile($jwtSetting['CLIENT-1']['PK'], $jwtSetting['CLIENT-1']['KP']);
+
+  // JWS
+  $algorithmManager = new AlgorithmManager([new PS256()]);
+  $jwsBuilder = new JWSBuilder($algorithmManager);
+  $jwsSerializerManager = new JWSSerializerManager([new CompactSerializer_sign()]);
+
+  // JWE
+  $keyEncryptionAlgorithmManager = new AlgorithmManager([new RSAOAEP256()]);
+  $contentEncryptionAlgorithmManager = new AlgorithmManager([new A256GCM()]);
+  $compressionMethodManager = new CompressionMethodManager([new Deflate()]);
+  $jweBuilder = new JWEBuilder(
+    $keyEncryptionAlgorithmManager,
+    $contentEncryptionAlgorithmManager,
+    $compressionMethodManager
+  );
+  $jweSerializerManager = new JWESerializerManager([new CompactSerializer_en()]); // Compact Serialization Mode
+
+  // Nested JWT
+  $nestedTokenBuilder = new NestedTokenBuilder($jweBuilder, $jweSerializerManager, $jwsBuilder, $jwsSerializerManager);
+  $encodedToken = $nestedTokenBuilder->create(
+    // The payload to protect
+    $payload,
+    // A list of signatures. (correspond to the list of recipients)
+    [
+      [
+        'key' => $signatureKey, // The key used to sign (mandatory)
+        // At least one of 'protected_header' or 'header' has to be set
+        'protected_header' => [
+          'alg'  => 'PS256', // alg for sign
+          'crit' => ['alg'] // critical header extension, let client to check.
+        ]
+      ]
+    ],
+    // The serialization mode for the JWS.
+    'jws_compact',
+
+    // The shared protected header for JWE info. (optional)
+    [
+      'alg' => 'RSA-OAEP-256', // Key Encryption Algorithm
+      'enc' => 'A256GCM' // Content Encryption Algorithm
+    ],
+    // The shared unprotected header. (optional)
+    [],
+    // A list of recipients (a shared key or public key) for JWE.
+    [
+      [
+        'key' => $encryptionKey // The recipient key. (mandatory)
+      ]
+    ],
+    // The serialization mode for the JWE.
+    'jwe_compact'
+  );
+
+  // test decode
+  $result = decodePayloadFromNestedJWT($encodedToken);
+
+  return [$encodedToken, $result];
+}
+
+// Test: simulate client to decode Nested JWT
+function decodePayloadFromNestedJWT(string $encodedToken)
+{
+  $jwtSetting = getJWTSetting();
+
+  $signatureKeySet = new JWKSet([JWKFactory::createFromKeyFile($jwtSetting['PK'], $jwtSetting['KP'])]);
+  $encryptionKeySet = new JWKSet([JWKFactory::createFromKeyFile($jwtSetting['CLIENT-1']['SK'], $jwtSetting['CLIENT-1']['KP'])]);
+
+  // JWE
+  $keyEncryptionAlgorithmManager = new AlgorithmManager([new RSAOAEP256()]);
+  $contentEncryptionAlgorithmManager = new AlgorithmManager([new A256GCM()]);
+  $compressionMethodManager = new CompressionMethodManager([new Deflate()]);
+  $jweSerializerManager = new JWESerializerManager([new CompactSerializer_en()]);
+  $jweDecrypter = new JWEDecrypter(
+    $keyEncryptionAlgorithmManager,
+    $contentEncryptionAlgorithmManager,
+    $compressionMethodManager
+  );
+  $jweLoader = new JWELoader(
+    $jweSerializerManager,
+    $jweDecrypter,
+    null
+  );
+
+  // JWS
+  $algorithmManager = new AlgorithmManager([new PS256()]);
+  $jwsVerifier = new JWSVerifier($algorithmManager);
+  $jwsSerializerManager = new JWSSerializerManager([new CompactSerializer_sign()]);
+  $jwsLoader = new JWSLoader(
+    $jwsSerializerManager,
+    $jwsVerifier,
+    null
+  );
+
+  // === Nested JWT ===
+  $nestedTokenLoader = new NestedTokenLoader($jweLoader, $jwsLoader);
+
+  // 1. check jwe header
+  $headerCheckerManager_JWE = new HeaderCheckerManager([new AlgorithmChecker(['RSA-OAEP-256'])], [new JWETokenSupport()]);
+  $serializer = new CompactSerializer_en();
+  $headerCheckerManager_JWE->check($serializer->unserialize($encodedToken, 0), 0, ['alg', 'enc']);
+
+  // 2. load jws (will decrypt jew -> verify jws)
+  $jws = $nestedTokenLoader->load($encodedToken, $encryptionKeySet, $signatureKeySet, $signature);
+
+  // 3. check jws header
+  $headerCheckerManager_JWS = new HeaderCheckerManager([new AlgorithmChecker(['PS256'])], [new JWSTokenSupport()]);
+  $headerCheckerManager_JWS->check($jws, 0, ['crit']);
+
+  // 4. check jws claim
+  $claimCheckerManager = new ClaimCheckerManager(
+    [
+      new Checker\IssuerChecker(['JCompany']),
+      new Checker\IssuedAtChecker(),
+      new Checker\ExpirationTimeChecker(),
+      new Checker\AudienceChecker('client-1') // TODO: get data from database
+    ]
+  );
+  $claims = json_decode($jws->getPayload(), true);
+  $claimCheckerManager->check($claims, ['iat', 'iss', 'exp', 'aud', 'data']);
+
+  return json_decode($jws->getPayload(), true);
 }
