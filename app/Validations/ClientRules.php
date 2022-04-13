@@ -14,24 +14,24 @@ use Exception;
  */
 class ClientRules
 {
-  /**
-   * @param string $str
-   * @param string $fields
-   * @param array $data
-   * @return bool
-   */
-  public function validateInfo(string $str, string $fields, array $data): bool
-  {
-    try {
-      // TODO: There is some checks for $tsr, $fields
-      // https://codeigniter4.github.io/userguide/libraries/validation.html#creating-custom-rules
+    /**
+     * @param string $str
+     * @param string $fields
+     * @param array $data
+     * @return bool
+     */
+    public function validateInfo(string $str, string $fields, array $data): bool
+    {
+        try {
+            // TODO: There is some checks for $tsr, $fields
+            // https://codeigniter4.github.io/userguide/libraries/validation.html#creating-custom-rules
 
-      $clientModel = new ClientModel();
-      $clientInfo = $clientModel->where('email', $data['email'])->first(); // return Object
+            $clientModel = new ClientModel();
+            $clientInfo = $clientModel->where('email', $data['email'])->first(); // return Object
 
-      return password_verify($data['password'], $clientInfo->password);
-    } catch (Exception $e) {
-      return false;
+            return password_verify($data['password'], $clientInfo->password);
+        } catch (Exception $e) {
+            return false;
+        }
     }
-  }
 }

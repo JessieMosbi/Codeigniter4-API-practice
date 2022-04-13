@@ -6,15 +6,15 @@ use CodeIgniter\Database\Migration;
 
 class CreateMemberDatabase extends Migration
 {
-	public function up()
-	{
-		// CREATE DATABASE IF NOT EXISTS member
-		// TODO: DB engine、charset???
-		$this->forge->createDatabase('member', true);
-	}
+    public function up()
+    {
+        // CREATE DATABASE IF NOT EXISTS member
+        // TODO: DB engine、charset???
+        $this->forge->createDatabase('member', true);
+    }
 
-	public function down()
-	{
-		$this->forge->dropDatabase('member');
-	}
+    public function down()
+    {
+        $this->forge->dropDatabase('member');
+    }
 }

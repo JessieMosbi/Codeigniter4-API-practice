@@ -10,34 +10,33 @@ use Faker\Factory;
  */
 class ZipSeeder extends Seeder
 {
-  /**
-   * @var \Faker\Generator
-   */
-  private $faker;
+    /**
+     * @var \Faker\Generator
+     */
+    private $faker;
 
-  /**
-   * constructor
-   */
-  public function __construct()
-  {
-    $this->db = \Config\Database::connect('member');
-    $this->faker = Factory::create('zh_TW');
-  }
-
-  /**
-   * @return mixed|void
-   */
-  public function run()
-  {
-    $data = [];
-    for ($i = 1; $i <= 5; $i++) {
-      $data[] =
-        [
-          'no' => $this->faker->randomNumber(3, true),
-          'city' => '吉城市',
-          'district' => $this->faker->name() . '鄉'
-        ];
+    /**
+     * constructor
+     */
+    public function __construct()
+    {
+        $this->db = \Config\Database::connect('member');
+        $this->faker = Factory::create('zh_TW');
     }
-    $this->db->table('zip')->insertBatch($data);
-  }
+
+    /**
+     * @return mixed|void
+     */
+    public function run()
+    {
+        $data = [];
+        for ($i = 1; $i <= 5; $i++) {
+            $data[] = [
+                'no' => $this->faker->randomNumber(3, true),
+                'city' => '吉城市',
+                'district' => $this->faker->name() . '鄉'
+            ];
+        }
+        $this->db->table('zip')->insertBatch($data);
+    }
 }

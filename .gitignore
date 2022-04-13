@@ -173,3 +173,4 @@ composer.phar
 
 ### This Project
 /app/Keys/*
+.php-cs-fixer.cache
