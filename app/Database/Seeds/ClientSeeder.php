@@ -17,7 +17,7 @@ class ClientSeeder extends Seeder
 
 	public function run()
 	{
-		$password = '123456';
+		$password = '12345678';
 		$data = [];
 		for ($i = 0; $i < 50; $i++) {
 			array_push($data, [
