@@ -5,16 +5,28 @@ namespace App\Database\Seeds;
 use CodeIgniter\Database\Seeder;
 use Faker\Factory;
 
+/**
+ * Generate fake data of zip in member database.
+ */
 class ZipSeeder extends Seeder
 {
+  /**
+   * @var \Faker\Generator
+   */
   private $faker;
 
+  /**
+   * constructor
+   */
   public function __construct()
   {
     $this->db = \Config\Database::connect('member');
     $this->faker = Factory::create('zh_TW');
   }
 
+  /**
+   * @return mixed|void
+   */
   public function run()
   {
     $data = [];

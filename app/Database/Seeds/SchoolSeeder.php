@@ -6,19 +6,34 @@ use CodeIgniter\Database\Seeder;
 use Faker\Factory;
 use Traits\SeedTrait;
 
+/**
+ * Generate fake data of school in member database.
+ */
 class SchoolSeeder extends Seeder
 {
   use SeedTrait;
 
+  /**
+   * @var \Faker\Generator
+   */
   private $faker;
+  /**
+   * @var string[]
+   */
   private $phase = ["國小", "國中"];
 
+  /**
+   * constructor
+   */
   public function __construct()
   {
     $this->db = \Config\Database::connect('member');
     $this->faker = Factory::create('zh_TW');
   }
 
+  /**
+   * @return mixed|void
+   */
   public function run()
   {
     $randomSchoolTypeIndex = $this->faker->numberBetween(0, 1);

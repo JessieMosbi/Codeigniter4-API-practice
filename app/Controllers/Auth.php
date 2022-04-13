@@ -5,11 +5,22 @@ namespace App\Controllers;
 use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
 
+/**
+ * Class Auth
+ *
+ * Auth provide basic authentication methods.
+ */
 class Auth extends ApiController
 {
+  /**
+   * Login authentication
+   *
+   * Get email and password from http request.
+   *
+   * @return object
+   */
   public function login(): object
   {
-    // Validation exec in ApiController - validateRequest()
     $rules = [
       'email' => 'required|min_length[6]|max_length[50]|valid_email',
       'password' => 'required|min_length[8]|max_length[100]|validateInfo[email, password]'
@@ -36,13 +47,29 @@ class Auth extends ApiController
     return $this->getAccessTokenForUser($input['email']);
   }
 
+  /**
+   * API for testing purpose
+   *
+   * Will be overridden by truly API in the future.
+   *
+   * @return object
+   */
   public function testApi(): object
   {
-    return $this->getEncryptDataForUser('client-1', ['data' => '123']); // TODO: param1 get from database
+    $clientName = 'client-1'; // TODO: get from database
+    $fakeData = ['data' => '123'];
+    return $this->getEncryptDataForUser($clientName, $fakeData);
   }
 
+
   /**
-   * Create access_token for existing user
+   * Create access_token for existing user.
+   *
+   * The access_token is Signed JWT (JWS).
+   *
+   * @param string $emailAddress
+   * @param int $responseCode
+   * @return object
    */
   private function getAccessTokenForUser(string $emailAddress, int $responseCode = ResponseInterface::HTTP_OK): object
   {
@@ -62,8 +89,7 @@ class Auth extends ApiController
           ]
         ]
       );
-    }
-    // JWT exception (include check fail) will be cached here
+    } // JWT exception (include check fail) will be cached here
     catch (Exception $exception) {
       return $this->getResponse(
         [
@@ -75,10 +101,19 @@ class Auth extends ApiController
     }
   }
 
+  /**
+   * Get data from database upon client's request.
+   *
+   * The data is Nested JWT = encrypted JWT (JWE) with signed JWT (JWS) in payload.
+   *
+   * @param string $clientName
+   * @param array $data
+   * @return object
+   */
   private function getEncryptDataForUser(string $clientName, array $data): object
   {
     try {
-      list($data, $result) = getEncryptJWTForUser($clientName, $data); // TODO: param1 get from database
+      list($data, $result) = getEncryptJWTForUser($clientName, $data);
       return $this->getResponse(
         [
           'status' => 'success',

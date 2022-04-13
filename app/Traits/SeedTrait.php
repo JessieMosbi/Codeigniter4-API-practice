@@ -1,8 +1,16 @@
 <?php
 
 namespace Traits {
+  /**
+   * Provides common methods to generate fake data when exec the seeder.
+   */
   trait SeedTrait
   {
+    /**
+     * Get the PK.id in specific Table when generate FK.id.
+     * @param $tableName
+     * @return int|void
+     */
     public function getTableRandomId($tableName = null)
     {
       if (!$tableName) return;

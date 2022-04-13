@@ -29,7 +29,7 @@ use Jose\Component\Encryption\JWELoader;
 use Jose\Component\Encryption\Algorithm\KeyEncryption\RSAOAEP256;
 use Jose\Component\Encryption\Algorithm\ContentEncryption\A256GCM;
 
-// Checker: 若欄位存在，則 check 是否符合格式、指定的值
+// Checker: if column exist, then check format and if value is a proper value that in list or not.
 use Jose\Component\Checker\HeaderCheckerManager;
 use Jose\Component\Checker\AlgorithmChecker;
 use Jose\Component\Signature\JWSTokenSupport;
@@ -42,7 +42,11 @@ use Jose\Component\NestedToken\NestedTokenBuilder;
 use Jose\Component\NestedToken\NestedTokenLoader;
 use Jose\Component\Core\JWKSet;
 
-// Generate a JWS (signed JWT) for an authenticated user
+/**
+ * Generate a JWS (signed JWT) for an authenticated user
+ *
+ * @return array
+ */
 function getSignedJWTForUser(): array
 {
   // TODO: validate Client
@@ -54,13 +58,14 @@ function getSignedJWTForUser(): array
   $iat = time();
   $exp = $iat + $jwtSetting['TTL'];
   $jti = (Uuid::uuid4())->toString(); // uuid 4: random
+  $aud = 'client-1'; // TODO: get name from db
 
   $payload = json_encode([
     'jti' => $jti,
     'iss' => $jwtSetting['ISSUER'],
     'iat' => $iat,
     'exp' => $exp,
-    'aud' => 'client-1' // TODO: get name from db
+    'aud' => $aud
   ]);
 
   $algorithmManager = new AlgorithmManager([new PS256()]);
@@ -77,7 +82,13 @@ function getSignedJWTForUser(): array
   return [$token];
 }
 
-// Get JWS (signed JWT) from Authentication header (format: Bearer XXXXXXXXX)
+/**
+ * Get JWS (signed JWT) from Authentication header (format: Bearer XXXXXXXXX)
+ *
+ * @param $authenticationHeader
+ * @return string
+ * @throws \Exception
+ */
 function getSignedJWTFromRequest($authenticationHeader): string
 {
   if (is_null($authenticationHeader)) {
@@ -86,7 +97,14 @@ function getSignedJWTFromRequest($authenticationHeader): string
   return explode(' ', $authenticationHeader)[1];
 }
 
-// Decodes JWS (signed JWT) and validate it
+/**
+ * Decodes JWS (signed JWT) and validate it
+ *
+ * @param string $encodedToken
+ * @return bool
+ * @throws \Jose\Component\Checker\InvalidClaimException
+ * @throws \Jose\Component\Checker\MissingMandatoryClaimException
+ */
 function validateSignedJWT(string $encodedToken): bool
 {
   $jwtSetting = getJWTSetting();
@@ -126,6 +144,11 @@ function validateSignedJWT(string $encodedToken): bool
   return true;
 }
 
+/**
+ * Get JWT setting from .env file
+ *
+ * @return array
+ */
 function getJWTSetting(): array
 {
   return [
@@ -142,17 +165,23 @@ function getJWTSetting(): array
   ];
 }
 
-// Generate a Nested JWT (JWE with JWT as payload) for passing data
+/**
+ * Generate a Nested JWT (JWE with JWT as payload) for passing data.
+ *
+ * @param string $userName
+ * @param array $data
+ * @return array
+ */
 function getEncryptJWTForUser(string $userName, array $data): array
 {
   $jwtSetting = getJWTSetting();
   $iat = time();
 
   $payload = json_encode([
-    'iat'  => $iat,
-    'iss'  => $jwtSetting['ISSUER'],
-    'exp'  => $iat + $jwtSetting['TTL'],
-    'aud'  => $userName,
+    'iat' => $iat,
+    'iss' => $jwtSetting['ISSUER'],
+    'exp' => $iat + $jwtSetting['TTL'],
+    'aud' => $userName,
     'data' => $data
   ]);
 
@@ -186,7 +215,7 @@ function getEncryptJWTForUser(string $userName, array $data): array
         'key' => $signatureKey, // The key used to sign (mandatory)
         // At least one of 'protected_header' or 'header' has to be set
         'protected_header' => [
-          'alg'  => 'PS256', // alg for sign
+          'alg' => 'PS256', // alg for sign
           'crit' => ['alg'] // critical header extension, let client to check.
         ]
       ]
@@ -217,7 +246,14 @@ function getEncryptJWTForUser(string $userName, array $data): array
   return [$encodedToken, $result];
 }
 
-// Test: simulate client to decode Nested JWT
+/**
+ * Test: simulate client to decode Nested JWT.
+ *
+ * @param string $encodedToken
+ * @return array
+ * @throws \Jose\Component\Checker\InvalidClaimException
+ * @throws \Jose\Component\Checker\MissingMandatoryClaimException
+ */
 function decodePayloadFromNestedJWT(string $encodedToken): array
 {
   $jwtSetting = getJWTSetting();
