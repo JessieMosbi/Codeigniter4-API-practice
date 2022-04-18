@@ -88,7 +88,13 @@ function getSignedJWTFromRequest($authenticationHeader): string
     if (is_null($authenticationHeader)) {
         throw new Exception('Missing or invalid JWT in request');
     }
-    return explode(' ', $authenticationHeader)[1];
+
+    $authenticationHeaderArray = explode(' ', $authenticationHeader);
+    if (empty($authenticationHeaderArray[1])) {
+        throw new Exception('Missing or invalid JWT in request');
+    }
+
+    return $authenticationHeaderArray[1];
 }
 
 /**
