@@ -58,7 +58,11 @@ class Auth extends ApiController
     {
         $clientName = 'client-1'; // TODO: get from database
         $fakeData = ['data' => '123'];
-        return $this->getEncryptDataForUser($clientName, $fakeData);
+        if ($this->request->isAJAX()) {
+            return $this->getDataForBrowser($clientName, $fakeData);
+        } else {
+            return $this->getEncryptDataForUser($clientName, $fakeData);
+        }
     }
 
 
@@ -117,6 +121,35 @@ class Auth extends ApiController
                     'status' => 'success',
                     'result' => $data,
                     'decode' => $result
+                ]
+            );
+        } catch (Exception $exception) {
+            return $this->getResponse(
+                [
+                    'status' => 'fail',
+                    'message' => $exception->getMessage()
+                ],
+                ResponseInterface::HTTP_BAD_REQUEST
+            );
+        }
+    }
+
+    /**
+     * Get data from database upon client's (browser's) request.
+     *
+     * The data is in JSON format
+     *
+     * @param string $clientName
+     * @param array $data
+     * @return object
+     */
+    private function getDataForBrowser(string $clientName, array $data): object
+    {
+        try {
+            return $this->getResponse(
+                [
+                    'status' => 'success',
+                    'result' => $data
                 ]
             );
         } catch (Exception $exception) {
