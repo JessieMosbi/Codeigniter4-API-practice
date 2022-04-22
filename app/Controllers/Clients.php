@@ -71,10 +71,37 @@ class Clients extends ApiController
                 );
             }
 
-            // upload the file
-            $file = $this->request->getFile('avatar');
-            if (!$file->isValid()) {
-                throw new Exception($file->getErrorString() . '(' . $file->getError() . ')');
+            $data = [
+                'name' => $this->request->getVar('name'),
+                'email' => $this->request->getVar('email'),
+                'password' => $this->request->getVar('password')
+            ];
+
+            if ($file = $this->request->getFile('avatar')) {
+                if (!$file->isValid()) {
+                    throw new Exception($file->getErrorString() . '(' . $file->getError() . ')');
+                }
+                $filePath = $file->store('/avatar/');
+                $fileName = str_replace('/avatar/', '', $filePath);
+                $data['avatar'] = $fileName;
+            }
+            $this->clientModel->save($data);
+
+            return $this->getResponse(
+                [
+                    'status' => 'success'
+                ],
+            );
+        } catch (Exception $e) {
+            return $this->getResponse(
+                [
+                    'status' => 'fail',
+                    'message' => $e->getMessage()
+                ],
+                ResponseInterface::HTTP_BAD_REQUEST
+            );
+        }
+    }
             }
             $filePath = $file->store('/avatar/');
             $fileName = str_replace('/avatar/', '', $filePath);
