@@ -35,6 +35,7 @@ $routes->get('/', 'Home::index');
 $routes->post('login', 'Auth::login');
 $routes->post('test', 'Auth::testApi');
 
+$routes->post('register', 'Clients::createClient');
 /*
  * --------------------------------------------------------------------
  * Additional Routing
