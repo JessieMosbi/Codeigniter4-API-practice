@@ -50,12 +50,18 @@ class Clients extends ApiController
                 'errors' => [
                     'required' => '{field} is required'
                 ]
-            ]
+            ],
+            'avatar'  => [
+                'label' => 'avatar',
+                'rules' => 'permit_empty|uploaded[avatar]|max_size[avatar,2048]|is_image[avatar]',
+                'errors' => [
+                    'uploaded' => '{field} is required'
+                ]
+            ],
         ];
 
         try {
-            $input = $this->getRequestInput($this->request);
-            if (!$this->validateRequest($input, $rules)) {
+            if (!$this->validate($rules)) {
                 return $this->getResponse(
                     [
                         'status' => 'fail',
@@ -65,10 +71,19 @@ class Clients extends ApiController
                 );
             }
 
+            // upload the file
+            $file = $this->request->getFile('avatar');
+            if (!$file->isValid()) {
+                throw new Exception($file->getErrorString() . '(' . $file->getError() . ')');
+            }
+            $filePath = $file->store('/avatar/');
+            $fileName = str_replace('/avatar/', '', $filePath);
+
             $data = [
                 'name' => $this->request->getVar('name'),
                 'email' => $this->request->getVar('email'),
-                'password' => $this->request->getVar('password')
+                'password' => $this->request->getVar('password'),
+                'avatar' => $fileName
             ];
             $this->clientModel->save($data);
 

@@ -41,7 +41,7 @@ class ClientModel extends Model
     /**
      * @var string[]
      */
-    protected $allowedFields = ['name', 'email', 'password'];
+    protected $allowedFields = ['name', 'email', 'password', 'avatar'];
 
     /**
      * @var bool
