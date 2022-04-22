@@ -19,6 +19,7 @@ class ClientModel extends Model
      * @var string
      */
     protected $table = 'client_basic';
+
     /**
      * @var string
      */
@@ -33,6 +34,7 @@ class ClientModel extends Model
      * @var string
      */
     protected $returnType = 'object';
+
     /**
      * @var bool
      */
@@ -47,36 +49,26 @@ class ClientModel extends Model
      * @var bool
      */
     protected $useTimestamps = true;
+
     /**
      * @var string
      */
     protected $createdField = 'created_at';
+
     /**
      * @var string
      */
     protected $updatedField = 'updated_at';
 
     /**
-     * Function exec before db insert.
-     *
-     * @param array $data
-     * @return array
+     * @var string[]
      */
-    protected function beforeInsert(array $data): array
-    {
-        return $this->getUpdatedDataWithHashedPassword($data);
-    }
+    protected $beforeInsert = ['getUpdatedDataWithHashedPassword'];
 
     /**
-     * Function exec before db update.
-     *
-     * @param array $data
-     * @return array
+     * @var string[]
      */
-    protected function beforeUpdate(array $data): array
-    {
-        return $this->getUpdatedDataWithHashedPassword($data);
-    }
+    protected $beforeUpdate = ['getUpdatedDataWithHashedPassword'];
 
     /**
      * Update the password value in data array.
@@ -84,7 +76,7 @@ class ClientModel extends Model
      * @param array $data
      * @return array
      */
-    private function getUpdatedDataWithHashedPassword(array $data): array
+    protected function getUpdatedDataWithHashedPassword(array $data): array
     {
         if (isset($data['data']['password'])) {
             $plaintextPassword = $data['data']['password'];
