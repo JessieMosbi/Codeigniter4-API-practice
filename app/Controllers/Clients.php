@@ -179,7 +179,15 @@ class Clients extends ApiController
         }
     }
 
+    public function deleteClient()
+    {
+        try {
+            // TODO: email comes from token
+            $email = 'test14@gmail.com';
 
+            $this->clientModel
+                ->where('email', $email)
+                ->delete();
             return $this->getResponse(
                 [
                     'status' => 'success'

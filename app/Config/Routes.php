@@ -37,6 +37,8 @@ $routes->post('test', 'Auth::testApi');
 
 $routes->post('register', 'Clients::createClient');
 $routes->patch('client', 'Clients::updateClient');
+$routes->delete('client', 'Clients::deleteClient');
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing
