@@ -13,7 +13,7 @@ class ClientModel extends Model
     /**
      * @var string
      */
-    protected $DBGroup = 'member';
+    protected $DBGroup = 'default';
 
     /**
      * @var string

@@ -20,7 +20,7 @@ class ClientSeeder extends Seeder
      */
     public function __construct()
     {
-        $this->db = \Config\Database::connect('member');
+        $this->db = \Config\Database::connect();
         $this->faker = Factory::create('zh_TW');
     }
 
