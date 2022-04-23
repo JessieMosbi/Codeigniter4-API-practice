@@ -7,9 +7,9 @@ use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
 
 /**
- * Class Member
+ * Class Client
  *
- * Provide Member CRUD, include uploading pic file
+ * Provide Client CUD, include uploading pic file
  */
 class Clients extends ApiController
 {
