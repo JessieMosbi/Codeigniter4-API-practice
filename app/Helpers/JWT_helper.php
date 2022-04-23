@@ -152,6 +152,21 @@ function validateSignedJWT(string $encodedToken): bool
 }
 
 /**
+ * Get JWT payload
+ */
+function getPayloadFromJWT(string $encodedToken, string $column = null): array
+{
+    $jwsSerializerManager = new JWSSerializerManager([new CompactSerializer_sign()]);
+    $jws = $jwsSerializerManager->unserialize($encodedToken);
+    $claims = json_decode($jws->getPayload(), true);
+
+    if ($column) {
+        return $claims[$column];
+    }
+    return $claims;
+}
+
+/**
  * Get JWT setting from .env file
  *
  * @return array
