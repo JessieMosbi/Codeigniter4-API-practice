@@ -133,15 +133,15 @@ class Clients extends ApiController
                 );
             }
 
-            // TODO: email comes from token
-            $email = 'test14@gmail.com';
+            helper('JWT');
+            $authenticationHeader = $this->request->getServer('HTTP_AUTHORIZATION');
+            $encodedToken = getSignedJWTFromRequest($authenticationHeader);
+            $clientId = getPayloadFromJWT($encodedToken, 'user')['id'];
 
             // upload new file
             if ($file = $this->request->getFile('avatar')) {
-                $clientInfo = $this->clientModel
-                    ->where('email', $email)
-                    ->first();
-                $fileName = WRITEPATH . 'uploads/avatar/' . $clientInfo->avatar;
+                $client = $this->clientModel->findClientById($clientId);
+                $fileName = WRITEPATH . 'uploads/avatar/' . $client->avatar;
 
                 if (is_file($fileName)) {
                     unlink($fileName);
@@ -158,10 +158,7 @@ class Clients extends ApiController
                 'name' => $this->request->getVar('name'),
                 'avatar' => (isset($fileName)) ? $fileName : null
             ];
-            $this->clientModel
-                ->where('email', $email)
-                ->set($data)
-                ->update();
+            $this->clientModel->updateClientById($clientId, $data);
 
             return $this->getResponse(
                 [
@@ -182,12 +179,12 @@ class Clients extends ApiController
     public function deleteClient()
     {
         try {
-            // TODO: email comes from token
-            $email = 'test14@gmail.com';
+            helper('JWT');
+            $authenticationHeader = $this->request->getServer('HTTP_AUTHORIZATION');
+            $encodedToken = getSignedJWTFromRequest($authenticationHeader);
+            $clientId = getPayloadFromJWT($encodedToken, 'user')['id'];
+            $this->clientModel->deleteClientById($clientId);
 
-            $this->clientModel
-                ->where('email', $email)
-                ->delete();
             return $this->getResponse(
                 [
                     'status' => 'success'

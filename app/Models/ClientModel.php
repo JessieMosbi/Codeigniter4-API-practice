@@ -95,4 +95,51 @@ class ClientModel extends Model
     {
         return password_hash($plaintextPassword, PASSWORD_DEFAULT);
     }
+
+    /**
+     * Get client by email
+     *
+     * @param string $email
+     * @return object
+     */
+    public function findClientByEmail($email): object
+    {
+        return $this->where('email', $email)
+                    ->first();
+    }
+
+    /**
+     * Get client by id
+     *
+     * @param number $id
+     * @return object
+     */
+    public function findClientById($id): object
+    {
+        return $this->find($id);
+    }
+
+    /**
+     * Update client by id
+     *
+     * @param number $id
+     * @return object
+     */
+    public function updateClientById($id, $data): bool
+    {
+        return $this->where('id', $id)
+                    ->set($data)
+                    ->update();
+    }
+
+    /**
+     * Delete client by id
+     *
+     * @param number $id
+     * @return object
+     */
+    public function deleteClientById($id): bool
+    {
+        return $this->delete($id);
+    }
 }
