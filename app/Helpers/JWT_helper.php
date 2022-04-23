@@ -41,25 +41,30 @@ use Jose\Component\Core\JWKSet;
  *
  * @return array
  */
-function getSignedJWTForUser(): array
+function getSignedJWTForUser($email): array
 {
-    // TODO: validate Client
-    // $clientModel = new ClientModel();
-    // $clientInfo = $clientModel->findClientByEmailAddress($emailAddress);
+    $clientModel = new ClientModel();
+    $client = $clientModel->findClientByEmail($email);
 
     $jwtSetting = getJWTSetting();
     $jwk = JWKFactory::createFromKeyFile($jwtSetting['SK'], $jwtSetting['KP']);
     $iat = time();
     $exp = $iat + $jwtSetting['TTL'];
     $jti = (Uuid::uuid4())->toString(); // uuid 4: random
-    $aud = 'client-1'; // TODO: get name from db
+    $aud = $client->name;
 
     $payload = json_encode([
-      'jti' => $jti,
-      'iss' => $jwtSetting['ISSUER'],
-      'iat' => $iat,
-      'exp' => $exp,
-      'aud' => $aud
+        // Registered claims
+        'jti' => $jti,
+        'iss' => $jwtSetting['ISSUER'],
+        'iat' => $iat,
+        'exp' => $exp,
+        'aud' => $aud,
+        // Private claims
+        'user' => [
+            'id' => $client->id,
+            'email' => $client->email
+        ]
     ]);
 
     $algorithmManager = new AlgorithmManager([new PS256()]);
