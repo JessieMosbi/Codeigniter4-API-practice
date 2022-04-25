@@ -54,6 +54,18 @@ class ApiController extends BaseController
         ->setJSON($responseBody);
     }
 
+    public function getEncryptedResponse(array $responseBody, int $code = ResponseInterface::HTTP_OK): object
+    {
+        list($data, $result) = getEncryptJWT('test', $responseBody);
+        return $this->getResponse(
+            [
+                'status' => 'success',
+                'result' => $data,
+                'decode' => $result
+            ]
+        );
+    }
+
     /**
      * Validate the input parse by getRequestInput.
      *
