@@ -42,7 +42,7 @@ use Jose\Component\Core\JWKSet;
  *
  * @return array
  */
-function getSignedJWTForUser($email): array
+function generateSignedJWT($email): array
 {
     $clientModel = new ClientModel();
     $client = $clientModel->findClientByEmail($email);
@@ -197,7 +197,7 @@ function getJWTSetting(): array
  * @param array $data
  * @return array
  */
-function getEncryptJWTForUser(string $userName, array $data): array
+function getEncryptJWT(string $userName, array $data): array
 {
     $jwtSetting = getJWTSetting();
     $iat = time();
@@ -344,8 +344,8 @@ function decodePayloadFromNestedJWT(string $encodedToken): array
     $claimCheckerManager = new ClaimCheckerManager([
         new Checker\IssuerChecker(['JCompany']),
         new Checker\IssuedAtChecker(),
-        new Checker\ExpirationTimeChecker(),
-        new Checker\AudienceChecker('client-1') // TODO: get data from database
+        new Checker\ExpirationTimeChecker()
+        // new Checker\AudienceChecker('client-1') // TODO: get data from database
     ]);
     $claims = json_decode($jws->getPayload(), true);
     $claimCheckerManager->check($claims, ['iat', 'iss', 'exp', 'aud', 'data']);

@@ -147,7 +147,7 @@ class Auth extends ApiController
             );
         }
 
-        return $this->getAccessTokenForUser($input['email']);
+        return $this->getAccessTokenForClient($input['email']);
     }
 
     /**
@@ -162,15 +162,15 @@ class Auth extends ApiController
         $clientName = 'client-1'; // TODO: get from database
         $fakeData = ['data' => '123'];
         if ($this->request->isAJAX()) {
-            return $this->getDataForBrowser($clientName, $fakeData);
+            return $this->getDataForClient($clientName, $fakeData);
         } else {
-            return $this->getEncryptDataForUser($clientName, $fakeData);
+            return $this->getEncryptDataForClient($clientName, $fakeData);
         }
     }
 
 
     /**
-     * Create access_token for existing user.
+     * Create access_token for existing client.
      *
      * The access_token is Signed JWT (JWS).
      *
@@ -178,12 +178,14 @@ class Auth extends ApiController
      * @param int $responseCode
      * @return object
      */
-    private function getAccessTokenForUser(string $emailAddress, int $responseCode = ResponseInterface::HTTP_OK): object
-    {
+    private function getAccessTokenForClient(
+        string $emailAddress,
+        int $responseCode = ResponseInterface::HTTP_OK
+    ): object {
         try {
             helper('JWT');
 
-            list($JWT) = getSignedJWTForUser($emailAddress);
+            list($JWT) = generateSignedJWT($emailAddress);
 
             return $this->getResponse([
                 'status' => 'success',
@@ -215,10 +217,10 @@ class Auth extends ApiController
      * @param array $data
      * @return object
      */
-    private function getEncryptDataForUser(string $clientName, array $data): object
+    private function getEncryptDataForClient(string $clientName, array $data): object
     {
         try {
-            list($data, $result) = getEncryptJWTForUser($clientName, $data);
+            list($data, $result) = getEncryptJWT($clientName, $data);
             return $this->getResponse(
                 [
                     'status' => 'success',
@@ -246,7 +248,7 @@ class Auth extends ApiController
      * @param array $data
      * @return object
      */
-    private function getDataForBrowser(string $clientName, array $data): object
+    private function getDataForClient(string $clientName, array $data): object
     {
         try {
             return $this->getResponse(
