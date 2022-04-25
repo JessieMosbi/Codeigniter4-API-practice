@@ -16,6 +16,10 @@ class Clients extends ApiController
     public function __construct()
     {
         $this->clientModel = new ClientModel();
+        helper('JWT');
+        $encodedToken = getSignedJWTFromRequest($this->request);
+        $clientId = getPayloadFromJWT($encodedToken, 'user')['id'];
+        $this->data = $this->clientModel->findClientById($clientId);
     }
 
     /**
@@ -56,15 +60,9 @@ class Clients extends ApiController
                 );
             }
 
-            helper('JWT');
-            $authenticationHeader = $this->request->getServer('HTTP_AUTHORIZATION');
-            $encodedToken = getSignedJWTFromRequest($authenticationHeader);
-            $clientId = getPayloadFromJWT($encodedToken, 'user')['id'];
-
             // upload new file
             if ($file = $this->request->getFile('avatar')) {
-                $client = $this->clientModel->findClientById($clientId);
-                $fileName = WRITEPATH . 'uploads/avatar/' . $client->avatar;
+                $fileName = WRITEPATH . 'uploads/avatar/' . $this->data->avatar;
 
                 if (is_file($fileName)) {
                     unlink($fileName);
@@ -81,7 +79,7 @@ class Clients extends ApiController
                 'name' => $this->request->getVar('name'),
                 'avatar' => (isset($fileName)) ? $fileName : null
             ];
-            $this->clientModel->updateClientById($clientId, $data);
+            $this->clientModel->updateClientById($this->data->id, $data);
 
             return $this->getResponse(
                 [
@@ -109,11 +107,7 @@ class Clients extends ApiController
     public function deleteClient()
     {
         try {
-            helper('JWT');
-            $authenticationHeader = $this->request->getServer('HTTP_AUTHORIZATION');
-            $encodedToken = getSignedJWTFromRequest($authenticationHeader);
-            $clientId = getPayloadFromJWT($encodedToken, 'user')['id'];
-            $this->clientModel->deleteClientById($clientId);
+            $this->clientModel->deleteClientById($this->data->id);
 
             return $this->getResponse(
                 [

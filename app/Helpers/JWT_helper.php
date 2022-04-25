@@ -1,5 +1,6 @@
 <?php
 
+use CodeIgniter\HTTP\RequestInterface;
 use App\Models\ClientModel;
 // UUID (for generating JWT payload jti)
 use Ramsey\Uuid\Uuid;
@@ -84,12 +85,14 @@ function getSignedJWTForUser($email): array
 /**
  * Get JWS (signed JWT) from Authentication header (format: Bearer XXXXXXXXX)
  *
- * @param $authenticationHeader
+ * @param RequestInterface $request
  * @return string
  * @throws \Exception
  */
-function getSignedJWTFromRequest($authenticationHeader): string
+function getSignedJWTFromRequest(RequestInterface $request): string
 {
+    $authenticationHeader = $request->getServer('HTTP_AUTHORIZATION');
+
     if (is_null($authenticationHeader)) {
         throw new Exception('Missing or invalid JWT in request');
     }
