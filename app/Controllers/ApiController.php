@@ -18,17 +18,22 @@ use Config\Services;
 class ApiController extends BaseController
 {
     /**
-     * Parse raw JSON requests sent to our API.
+     * Parse form or raw JSON requests sent to our API.
      *
-     * Content is stored in the body field of the request.
-     * This function will convert content to associative array.
+     * JSON format content is stored in the body field of the request.
+     * This function will convert content to associative array because validator can only receive array.
      *
      * @param IncomingRequest $request
+     * @param string $type content-type in header
      * @return array
      */
-    public function getRequestInput(IncomingRequest $request): array
+    public function getRequestInput(IncomingRequest $request, string $type): array
     {
-        $input = json_decode($request->getBody(), true);
+        if (strtoupper($type) === 'JSON') {
+            $input = json_decode($request->getBody(), true);
+        } elseif ($type === 'form') {
+            $input = $request->getVar();
+        }
         return $input;
     }
 

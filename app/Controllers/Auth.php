@@ -16,25 +16,29 @@ class Auth extends ApiController
      * Login authentication
      *
      * Get email and password from http request.
+     * Params are in request body as 'application/json' type.
      *
      * @return object
      */
     public function login(): object
     {
         $rules = [
-            'email' => 'required|min_length[6]|max_length[50]|valid_email',
-            'password' => 'required|min_length[8]|max_length[100]|validateInfo[email, password]'
-        ];
-
-        $errors = [
-            'password' => [
-                'validateInfo' => 'email or password wrong'
+            'email'  => [
+                'label' => 'email',
+                'rules' => 'required|min_length[6]|max_length[50]|valid_email'
+            ],
+            'password'  => [
+                'label' => 'password',
+                'rules' => 'required|min_length[8]|max_length[100]|validateInfo[email, password]',
+                'errors' => [
+                    'validateInfo' => 'email or password wrong'
+                ]
             ]
         ];
 
-        $input = $this->getRequestInput($this->request);
+        $input = $this->getRequestInput($this->request, 'json');
 
-        if (!$this->validateRequest($input, $rules, $errors)) {
+        if (!$this->validateRequest($input, $rules)) {
             return $this->getResponse(
                 [
                     'status' => 'fail',

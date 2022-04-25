@@ -20,7 +20,14 @@ class Members extends ApiController
         $this->memberModel = new MemberModel();
     }
 
-    public function getMembers()
+    /**
+     * Get members' data
+     *
+     * Params are in request body as 'application/json' type.
+     *
+     * @return object
+     */
+    public function getMembers(): object
     {
         $rules = [
             'school'  => [
@@ -36,7 +43,7 @@ class Members extends ApiController
             ]
         ];
 
-        $input = $this->getRequestInput($this->request);
+        $input = $this->getRequestInput($this->request, 'json');
 
         try {
             if (!$this->validateRequest($input, $rules)) {

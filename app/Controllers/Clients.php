@@ -18,7 +18,14 @@ class Clients extends ApiController
         $this->clientModel = new ClientModel();
     }
 
-    public function createClient()
+    /**
+     * Insert a tuple in client_basic Table
+     *
+     * Params are 'multipart/form-data content' (form with file) type
+     *
+     * @return object
+     */
+    public function createClient(): object
     {
         $rules = [
             'name'  => [
@@ -61,7 +68,8 @@ class Clients extends ApiController
         ];
 
         try {
-            if (!$this->validate($rules)) {
+            $input = $this->getRequestInput($this->request, 'form');
+            if (!$this->validateRequest($input, $rules)) {
                 return $this->getResponse(
                     [
                         'status' => 'fail',
@@ -123,7 +131,8 @@ class Clients extends ApiController
         ];
 
         try {
-            if (!$this->validate($rules)) {
+            $input = $this->getRequestInput($this->request, 'form');
+            if (!$this->validateRequest($input, $rules)) {
                 return $this->getResponse(
                     [
                         'status' => 'fail',
@@ -176,6 +185,13 @@ class Clients extends ApiController
         }
     }
 
+    /**
+     * Delete tuple in client_basic Table
+     *
+     * Id is retrieved in token.
+     *
+     * @return object
+     */
     public function deleteClient()
     {
         try {
