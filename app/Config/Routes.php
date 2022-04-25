@@ -34,7 +34,6 @@ $routes->setAutoRoute(true);
 $routes->get('/', 'Home::index');
 $routes->post('login', 'Auth::login');
 $routes->post('register', 'Auth::createClient');
-$routes->post('test', 'Auth::testApi');
 
 $routes->get('members', 'Members::getMembers');
 $routes->patch('client', 'Clients::updateClient');

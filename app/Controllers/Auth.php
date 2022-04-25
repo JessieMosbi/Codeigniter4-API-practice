@@ -150,24 +150,6 @@ class Auth extends ApiController
         return $this->getAccessTokenForClient($input['email']);
     }
 
-    /**
-     * API for testing purpose
-     *
-     * Will be overridden by truly API in the future.
-     *
-     * @return object
-     */
-    public function testApi(): object
-    {
-        $clientName = 'client-1'; // TODO: get from database
-        $fakeData = ['data' => '123'];
-        if ($this->request->isAJAX()) {
-            return $this->getDataForClient($clientName, $fakeData);
-        } else {
-            return $this->getEncryptDataForClient($clientName, $fakeData);
-        }
-    }
-
 
     /**
      * Create access_token for existing client.
