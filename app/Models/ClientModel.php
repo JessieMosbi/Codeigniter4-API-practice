@@ -114,7 +114,7 @@ class ClientModel extends Model
      * @param number $id
      * @return object
      */
-    public function findClientById($id): object
+    public function findClientById($id): ?object
     {
         return $this->find($id);
     }

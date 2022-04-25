@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\ClientModel;
+use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
 
@@ -16,12 +17,7 @@ class Clients extends ApiController
     public function __construct()
     {
         $this->clientModel = new ClientModel();
-        helper('JWT');
-        $encodedToken = getSignedJWTFromRequest($this->request);
-        $clientId = getPayloadFromJWT($encodedToken, 'user')['id'];
-        $this->data = $this->clientModel->findClientById($clientId);
     }
-
     /**
      * Update tuple in client_basic Table
      *
@@ -31,6 +27,17 @@ class Clients extends ApiController
      */
     public function updateClient()
     {
+
+        if (!$client = $this->getClient($this->request)) {
+            return $this->getResponse(
+                [
+                    'status' => 'fail',
+                    'message' => 'client is not exist',
+                ],
+                ResponseInterface::HTTP_BAD_REQUEST
+            );
+        }
+
         $rules = [
             'name'  => [
                 'label' => 'name',
@@ -62,7 +69,7 @@ class Clients extends ApiController
 
             // upload new file
             if ($file = $this->request->getFile('avatar')) {
-                $fileName = WRITEPATH . 'uploads/avatar/' . $this->data->avatar;
+                $fileName = WRITEPATH . 'uploads/avatar/' . $client->avatar;
 
                 if (is_file($fileName)) {
                     unlink($fileName);
@@ -79,7 +86,7 @@ class Clients extends ApiController
                 'name' => $this->request->getVar('name'),
                 'avatar' => (isset($fileName)) ? $fileName : null
             ];
-            $this->clientModel->updateClientById($this->data->id, $data);
+            $this->clientModel->updateClientById($client->id, $data);
 
             return $this->getResponse(
                 [
@@ -106,8 +113,18 @@ class Clients extends ApiController
      */
     public function deleteClient()
     {
+        if (!$client = $this->getClient($this->request)) {
+            return $this->getResponse(
+                [
+                    'status' => 'fail',
+                    'message' => 'client is not exist',
+                ],
+                ResponseInterface::HTTP_BAD_REQUEST
+            );
+        }
+
         try {
-            $this->clientModel->deleteClientById($this->data->id);
+            $this->clientModel->deleteClientById($client->id);
 
             return $this->getResponse(
                 [
@@ -123,5 +140,13 @@ class Clients extends ApiController
                 ResponseInterface::HTTP_BAD_REQUEST
             );
         }
+    }
+
+    private function getClient(IncomingRequest $request): object
+    {
+        helper('JWT');
+        $encodedToken = getSignedJWTFromRequest($request);
+        $clientId = getPayloadFromJWT($encodedToken, 'user')['id'];
+        return $this->clientModel->findClientById($clientId);
     }
 }
