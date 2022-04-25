@@ -141,8 +141,8 @@ function validateSignedJWT(string $encodedToken): bool
         [
             new Checker\IssuerChecker([$jwtSetting['ISSUER']]),
             new Checker\IssuedAtChecker(),
-            new Checker\ExpirationTimeChecker(),
-            new Checker\AudienceChecker('client-1') // TODO: get value from DB correspond by request ip
+            new Checker\ExpirationTimeChecker()
+            // new Checker\AudienceChecker('client-1') // TODO: get value from DB correspond by request ip
         ]
     );
     $claims = json_decode($jws->getPayload(), true);
