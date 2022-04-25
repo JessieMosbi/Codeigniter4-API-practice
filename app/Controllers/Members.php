@@ -65,12 +65,21 @@ class Members extends ApiController
             }
             $members = $this->memberModel->findMembersBySchoolAndStatus($data);
 
-            return $this->getResponse(
-                [
-                    'status' => 'success',
-                    'result' => $members
-                ],
-            );
+            if ($this->request->isAJAX()) {
+                return $this->getResponse(
+                    [
+                        'status' => 'success',
+                        'result' => $members
+                    ],
+                );
+            } else {
+                return $this->getEncryptedResponse(
+                    [
+                        'status' => 'success',
+                        'result' => $members
+                    ],
+                );
+            }
         } catch (Exception $e) {
             return $this->getResponse(
                 [
