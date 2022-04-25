@@ -27,10 +27,12 @@ class Members extends ApiController
                 'label' => 'school',
                 'rules' => 'permit_empty|exact_length[6]'
             ],
-            // TODO: 應該要去檢查 status 是否存在於 member.status，否則後端改這邊也要改
             'status'  => [
                 'label' => 'status',
-                'rules' => 'permit_empty|is_natural_no_zero|in_list[1,2]'
+                'rules' => 'permit_empty|is_natural_no_zero|validateStatusValue[status]',
+                'errors' => [
+                    'validateStatusValue' => '{field} is not a valid value'
+                ]
             ]
         ];
 
