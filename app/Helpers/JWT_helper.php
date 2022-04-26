@@ -1,5 +1,6 @@
 <?php
 
+use CodeIgniter\HTTP\RequestInterface;
 use App\Models\ClientModel;
 // UUID (for generating JWT payload jti)
 use Ramsey\Uuid\Uuid;
@@ -41,25 +42,30 @@ use Jose\Component\Core\JWKSet;
  *
  * @return array
  */
-function getSignedJWTForUser(): array
+function generateSignedJWT($email): array
 {
-    // TODO: validate Client
-    // $clientModel = new ClientModel();
-    // $clientInfo = $clientModel->findClientByEmailAddress($emailAddress);
+    $clientModel = new ClientModel();
+    $client = $clientModel->findClientByEmail($email);
 
     $jwtSetting = getJWTSetting();
     $jwk = JWKFactory::createFromKeyFile($jwtSetting['SK'], $jwtSetting['KP']);
     $iat = time();
     $exp = $iat + $jwtSetting['TTL'];
     $jti = (Uuid::uuid4())->toString(); // uuid 4: random
-    $aud = 'client-1'; // TODO: get name from db
+    $aud = $client->name;
 
     $payload = json_encode([
-      'jti' => $jti,
-      'iss' => $jwtSetting['ISSUER'],
-      'iat' => $iat,
-      'exp' => $exp,
-      'aud' => $aud
+        // Registered claims
+        'jti' => $jti,
+        'iss' => $jwtSetting['ISSUER'],
+        'iat' => $iat,
+        'exp' => $exp,
+        'aud' => $aud,
+        // Private claims
+        'user' => [
+            'id' => $client->id,
+            'email' => $client->email
+        ]
     ]);
 
     $algorithmManager = new AlgorithmManager([new PS256()]);
@@ -79,12 +85,14 @@ function getSignedJWTForUser(): array
 /**
  * Get JWS (signed JWT) from Authentication header (format: Bearer XXXXXXXXX)
  *
- * @param $authenticationHeader
+ * @param RequestInterface $request
  * @return string
  * @throws \Exception
  */
-function getSignedJWTFromRequest($authenticationHeader): string
+function getSignedJWTFromRequest(RequestInterface $request): string
 {
+    $authenticationHeader = $request->getServer('HTTP_AUTHORIZATION');
+
     if (is_null($authenticationHeader)) {
         throw new Exception('Missing or invalid JWT in request');
     }
@@ -136,14 +144,33 @@ function validateSignedJWT(string $encodedToken): bool
         [
             new Checker\IssuerChecker([$jwtSetting['ISSUER']]),
             new Checker\IssuedAtChecker(),
-            new Checker\ExpirationTimeChecker(),
-            new Checker\AudienceChecker('client-1') // TODO: get value from DB correspond by request ip
+            new Checker\ExpirationTimeChecker()
+            // new Checker\AudienceChecker('client-1') // TODO: get value from DB correspond by request ip
         ]
     );
     $claims = json_decode($jws->getPayload(), true);
     $claimCheckerManager->check($claims, ['jti', 'iss', 'iat', 'exp', 'aud']);
 
     return true;
+}
+
+/**
+ * Get JWT payload
+ *
+ * @param string $encodedToken
+ * @param string|null $column
+ * @return array
+ */
+function getPayloadFromJWT(string $encodedToken, string $column = null): array
+{
+    $jwsSerializerManager = new JWSSerializerManager([new CompactSerializer_sign()]);
+    $jws = $jwsSerializerManager->unserialize($encodedToken);
+    $claims = json_decode($jws->getPayload(), true);
+
+    if ($column) {
+        return $claims[$column];
+    }
+    return $claims;
 }
 
 /**
@@ -174,7 +201,7 @@ function getJWTSetting(): array
  * @param array $data
  * @return array
  */
-function getEncryptJWTForUser(string $userName, array $data): array
+function getEncryptJWT(string $userName, array $data): array
 {
     $jwtSetting = getJWTSetting();
     $iat = time();
@@ -321,8 +348,8 @@ function decodePayloadFromNestedJWT(string $encodedToken): array
     $claimCheckerManager = new ClaimCheckerManager([
         new Checker\IssuerChecker(['JCompany']),
         new Checker\IssuedAtChecker(),
-        new Checker\ExpirationTimeChecker(),
-        new Checker\AudienceChecker('client-1') // TODO: get data from database
+        new Checker\ExpirationTimeChecker()
+        // new Checker\AudienceChecker('client-1') // TODO: get data from database
     ]);
     $claims = json_decode($jws->getPayload(), true);
     $claimCheckerManager->check($claims, ['iat', 'iss', 'exp', 'aud', 'data']);
