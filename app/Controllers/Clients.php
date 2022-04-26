@@ -142,6 +142,12 @@ class Clients extends ApiController
         }
     }
 
+    /**
+     * Get client from database (by id in token)
+     *
+     * @param IncomingRequest $request
+     * @return object
+     */
     private function getClient(IncomingRequest $request): object
     {
         helper('JWT');

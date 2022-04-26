@@ -156,6 +156,10 @@ function validateSignedJWT(string $encodedToken): bool
 
 /**
  * Get JWT payload
+ *
+ * @param string $encodedToken
+ * @param string|null $column
+ * @return array
  */
 function getPayloadFromJWT(string $encodedToken, string $column = null): array
 {

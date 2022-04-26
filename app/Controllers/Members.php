@@ -8,7 +8,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 use Exception;
 
 /**
- * Member Client
+ * Class Member
  *
  * Provide Member Read function
  */

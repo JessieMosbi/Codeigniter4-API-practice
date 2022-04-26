@@ -12,6 +12,8 @@ use CodeIgniter\Validation\Exceptions\ValidationException;
 use Config\Services;
 
 /**
+ * Class ApiController
+ *
  * Provide basic function to deal with HTTP request.
  * ApiController will be extended by each api controller.
  */
@@ -38,12 +40,12 @@ class ApiController extends BaseController
     }
 
     /**
-     * Used by our controllers to return JSON responses to the client.
+     * Used by our controllers to return plain JSON responses to the client.
      *
      * By default, all response objects sent through CodeIgniter have HTTP caching turned off.
      *
      * @param array $responseBody
-     * @param int $code
+     * @param int|null $code HTTP status code
      * @return object
      */
     public function getResponse(array $responseBody, int $code = ResponseInterface::HTTP_OK): object
@@ -54,7 +56,13 @@ class ApiController extends BaseController
         ->setJSON($responseBody);
     }
 
-    public function getEncryptedResponse(array $responseBody, int $code = ResponseInterface::HTTP_OK): object
+    /**
+     * Used by our controllers to return encrypt JSON responses (Nested JWT) to the client.
+     *
+     * @param array $responseBody
+     * @return object
+     */
+    public function getEncryptedResponse(array $responseBody): object
     {
         list($data, $result) = getEncryptJWT('test', $responseBody);
         return $this->getResponse(
@@ -73,7 +81,7 @@ class ApiController extends BaseController
      *
      * @param array $input
      * @param array $rules
-     * @param array $messages
+     * @param array $messages error message
      * @return bool
      */
     public function validateRequest(array $input, array $rules, array $messages = []): bool
