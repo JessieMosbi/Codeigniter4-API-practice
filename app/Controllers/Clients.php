@@ -25,7 +25,7 @@ class Clients extends ApiController
      *
      * @return object
      */
-    public function updateClient()
+    public function updateClient(): object
     {
 
         if (!$client = $this->getClient($this->request)) {
@@ -111,7 +111,7 @@ class Clients extends ApiController
      *
      * @return object
      */
-    public function deleteClient()
+    public function deleteClient(): object
     {
         if (!$client = $this->getClient($this->request)) {
             return $this->getResponse(
