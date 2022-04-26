@@ -157,13 +157,10 @@ class Auth extends ApiController
      * The access_token is Signed JWT (JWS).
      *
      * @param string $emailAddress
-     * @param int $responseCode
      * @return object
      */
-    private function getAccessTokenForClient(
-        string $emailAddress,
-        int $responseCode = ResponseInterface::HTTP_OK
-    ): object {
+    private function getAccessTokenForClient(string $emailAddress): object
+    {
         try {
             helper('JWT');
 
