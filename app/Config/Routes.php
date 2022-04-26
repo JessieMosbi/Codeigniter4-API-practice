@@ -33,7 +33,11 @@ $routes->setAutoRoute(true);
 // route since we don't have to scan directories.
 $routes->get('/', 'Home::index');
 $routes->post('login', 'Auth::login');
-$routes->post('test', 'Auth::testApi');
+$routes->post('register', 'Auth::createClient');
+
+$routes->get('members', 'Members::getMembers');
+$routes->patch('client', 'Clients::updateClient');
+$routes->delete('client', 'Clients::deleteClient');
 
 /*
  * --------------------------------------------------------------------

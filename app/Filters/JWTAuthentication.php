@@ -27,12 +27,10 @@ class JWTAuthentication implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null): object
     {
-        $authenticationHeader = $request->getServer('HTTP_AUTHORIZATION');
-
         try {
             helper('jwt'); // controller can also use this helper, don't need to redeclare
 
-            $encodedToken = getSignedJWTFromRequest($authenticationHeader);
+            $encodedToken = getSignedJWTFromRequest($request);
             if (!validateSignedJWT($encodedToken)) {
                 return Services::response()
                 ->setStatusCode(ResponseInterface::HTTP_UNAUTHORIZED)

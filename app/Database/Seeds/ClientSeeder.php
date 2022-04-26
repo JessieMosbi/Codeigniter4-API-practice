@@ -20,7 +20,7 @@ class ClientSeeder extends Seeder
      */
     public function __construct()
     {
-        $this->db = \Config\Database::connect('member');
+        $this->db = \Config\Database::connect();
         $this->faker = Factory::create('zh_TW');
     }
 
@@ -38,6 +38,11 @@ class ClientSeeder extends Seeder
                 'password' => password_hash($password, PASSWORD_DEFAULT)
             ]);
         }
+        array_push($data, [
+            'name' => 'test',
+            'email' => 'test@gmail.com',
+            'password' => $password
+        ]);
         $this->db->table('client_basic')->insertBatch($data);
     }
 }

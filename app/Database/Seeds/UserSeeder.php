@@ -36,19 +36,6 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        // status table
-        $this->db->table('status')->insertBatch([
-          [
-            'id' => 1,
-            'name' => '使用中'
-          ],
-          [
-            'id' => 2,
-            'name' => '停權'
-          ]
-        ]);
-
-        // user table
         $data = [];
         for ($i = 0; $i < 50; $i++) {
             array_push($data, [
@@ -60,6 +47,6 @@ class UserSeeder extends Seeder
                 'status_id' => $this->getTableRandomId('status'),
             ]);
         }
-        $this->db->table('user')->insertBatch($data);
+        $this->db->table('user_basic')->insertBatch($data);
     }
 }
