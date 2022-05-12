@@ -1,4 +1,5 @@
 # Codeigniter 4 API Server
+Client can register and login, then get school member's info.
  - Provide CRUD Restful API.
  - Reference [this website](https://www.twilio.com/blog/create-secured-restful-api-codeigniter-php) for structure.
  - Use [jwt-framework](https://github.com/web-token/jwt-framework) to authenticate client.
