@@ -1,3 +1,8 @@
+# Codeigniter 4 API Server
+ - Provide CRUD Restful API.
+ - Reference [this website](https://www.twilio.com/blog/create-secured-restful-api-codeigniter-php) for structure.
+ - Use [jwt-framework](https://github.com/web-token/jwt-framework) to authenticate client.
+
 ## Init project
 
 1. Download this project.   
@@ -67,7 +72,7 @@ openssl genrsa -des3 -out private_client1.pem 2048
 openssl rsa -in private.pem -outform PEM -pubout -out public_client1.pem
 ```
 
-### Use POSTMAN or other tools to test APIs
+## Use POSTMAN or other tools to test APIs
 
 Seeder: 
 |Name    | Email                           | Password  |
