@@ -1,71 +1,162 @@
-# CodeIgniter 4 Application Starter
+## Init project
 
-## What is CodeIgniter?
+1. Download this project.   
+`git clone https://github.com/JessieMosbi/Codeigniter4-API-practice.git`
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](http://codeigniter.com).
+2. Install both production and development dependencies in this project.   
+`composer install`
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+3. Create .env file.
+    ```
+    # CI environment setting
+    CI_ENVIRONMENT = development
 
-More information about the plans for version 4 can be found in [the announcement](http://forum.codeigniter.com/thread-62615.html) on the forums.
+    # CI database setting
+    database.default.hostname = 'localhost'
+    database.default.database = 'data_api_manage'
+    database.default.username = '<your_username>'
+    database.default.password = '<your_password>'
+    database.default.DBDriver = 'MySQLi'
+    database.default.charset  = 'utf8mb4'
+    database.default.DBCollat = 'utf8mb4_general_ci'
 
-The user guide corresponding to this version of the framework can be found
-[here](https://codeigniter4.github.io/userguide/).
+    database.member.hostname = 'localhost'
+    database.member.database = 'member'
+    database.member.username = '<your_username>'
+    database.member.password = '<your_password>'
+    database.member.DBDriver = 'MySQLi'
+    database.member.charset  = 'utf8mb4'
+    database.member.DBCollat = 'utf8mb4_general_ci'
 
-## Installation & updates
+    # JWT setting
+    KEY_FILE_PASSWORD = '<your_key_password>'
+    PUBLIC_KEY_FILE = '<your_public_key_path>'
+    PRIVATE_KEY_FILE = '<your_pricate_key_path>'
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+    KEY_FILE_PASSWORD_CLIENT1 = '<client1_key_password>'
+    PUBLIC_KEY_FILE_CLIENT1 = '<client1_public_key_path>'
+    PRIVATE_KEY_FILE_CLIENT1 = '<client1_pricate_key_path>'
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+    JWT_ISSUER = '<your_name>'
+    JWT_TIME_TO_LIVE = 300 # in second
+    ```
 
-## Setup
+## Create Databases and seeder
+`php spark db:create`: data_api_manage   
+`php spark migrate` (member database will be created in migration)   
+`php spark db:seed ClientSeeder`   
+`php spark db:seed ZipSeeder`   
+`php spark db:seed SchoolSeeder`   
+`php spark db:seed StatusSeeder`   
+`php spark db:seed UserSeeder`   
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+## Start API Server
+`php spark serve`   
+Open browser and connect to http://localhost:8080, you can see the welcome page of CodeIgniter 4.1.9.
 
-## Important Change with index.php
+## Generate keys for JWT
+Use command line   
+```
+cd app
+mkdir Keys
+cd Keys
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+openssl genrsa -des3 -out private.pem 2048
+openssl rsa -in private.pem -outform PEM -pubout -out public.pem
+openssl genrsa -des3 -out private_client1.pem 2048
+openssl rsa -in private.pem -outform PEM -pubout -out public_client1.pem
+```
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+### Use POSTMAN or other tools to test APIs
 
-**Please** read the user guide for a better explanation of how CI4 works!
+Seeder: 
+|Name    | Email                           | Password  |
+|:------:|:-------------------------------:|:---------:|
+|test    | test<span>@gmail.com</span>     | 12345678  |
 
-## Repository Management
+POST http://localhost:8080/login
+- Request: application/json
+  ```
+  {
+      "email": "test@gmail.com",
+      "password": "12345678"
+  }
+  ```
+- Response: application/json
+  ```
+  {
+      "status": "success",
+      "result": {
+          "user": {
+              "email": "test@gmail.com"
+          },
+          "access_token": "<JWT>"
+      }
+  }
+  ```
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+Put token in HTTP Header `Authorization: Bearer Token <JWT>`
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+POST http://localhost:8080/register   
+- Request: multipart/form-data
+  ```
+  avatar (optional file)
+  name = Jessie
+  email = test2@gmail.com
+  password = 12345678
+  passconf = 12345678
+  ```
+- Response
+  ```
+  {
+      "status": "success",
+  }
+  {
+      "status": "fail",
+      "message": {
+          "email": "email is duplicated"
+      }
+  }
+  ```
 
-## Server Requirements
+PATCH http://localhost:8080/client   
+- Request: multipart/form-data
+  ```
+  avatar (optional file)
+  name = Jessie
+  ```
+- Response
+  ```
+  {
+      "status": "success",
+  }
+  ```
 
-PHP version 7.3 or higher is required, with the following extensions installed:
+DELETE http://localhost:8080/client   
+- Response
+  ```
+  {
+      "status": "success",
+  }
+  ```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
-
-Additionally, make sure that the following extensions are enabled in your PHP:
-
-- json (enabled by default - don't turn it off)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php)
-- xml (enabled by default - don't turn it off)
-
-## My Steps
-MAMP virtual settings
-
-php spark db:create
-data_api_manage
-
-php spark migrate
+GET http://localhost:8080/members   
+- Request
+  ```
+  {
+      "status": 2,
+      "school": "<6 characters>"
+  }
+  ```
+- Response
+  ```
+  {
+      "status": "success",
+      "result": "<plain result>"
+  }
+  {
+      "status": "success",
+      "result": "<Nested JWT>",
+      "decode": "<plain result from Nested JWT>"
+  }
+  ```
