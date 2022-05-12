@@ -2,6 +2,7 @@
  - Provide CRUD Restful API.
  - Reference [this website](https://www.twilio.com/blog/create-secured-restful-api-codeigniter-php) for structure.
  - Use [jwt-framework](https://github.com/web-token/jwt-framework) to authenticate client.
+ - In GET members API will return plain data if HTTP Request is XMLHttpRequest; otherwise, return Nested JWT (JWE that JWT as payload).
 
 ## Init project
 
