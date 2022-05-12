@@ -41,7 +41,7 @@ class ClientSeeder extends Seeder
         array_push($data, [
             'name' => 'test',
             'email' => 'test@gmail.com',
-            'password' => $password
+            'password' => password_hash($password, PASSWORD_DEFAULT)
         ]);
         $this->db->table('client_basic')->insertBatch($data);
     }
